@@ -28,7 +28,13 @@ int main() {
 	//quickDemo.inrange_demo(src);
 	//quickDemo.pixel_statistic_demo(src);
 	//quickDemo.drawing_demo(src);
-	quickDemo.random_drawing(src);
+	//quickDemo.random_drawing(src);
+	//quickDemo.polyline_drawing_demo(src);
+	//quickDemo.mouse_drawing_demo(src);
+	//quickDemo.norm_demo(src);
+	//quickDemo.resize_demo(src);
+	//quickDemo.flip_demo(src);
+	quickDemo.rotate_demo(src);
 
 	waitKey(0);
 	destroyAllWindows();

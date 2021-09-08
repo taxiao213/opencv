@@ -19,5 +19,11 @@ public:
 	void inrange_demo(Mat& image);//图像色彩空间转换
 	void pixel_statistic_demo(Mat& image);//图像像素值统计
 	void drawing_demo(Mat& image);//图像几何形状的绘制
-	void random_drawing(Mat& image);//图像几何形状的绘制
+	void random_drawing(Mat& image);//随机数与随机颜色
+	void polyline_drawing_demo(Mat& image);//多边形填充与绘制
+	void mouse_drawing_demo(Mat& image);//鼠标事件
+	void norm_demo(Mat& image);//归一化
+	void resize_demo(Mat& image);//图像缩放和插值
+	void flip_demo(Mat& image);//图像翻转
+	void rotate_demo(Mat& image);//图像旋转
 };

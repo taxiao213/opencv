@@ -333,3 +333,135 @@ void QuickDemo::random_drawing(Mat& image)
 		imshow("随机绘制演示", canvas);
 	}
 }
+
+void QuickDemo::polyline_drawing_demo(Mat& image)
+{
+	Mat canvas = Mat::zeros(Size(500, 500), CV_8UC3);
+	Point p1(100, 100);
+	Point p2(350, 100);
+	Point p3(450, 280);
+	Point p4(320, 450);
+	Point p5(80, 400);
+	std::vector<Point> list;
+	list.push_back(p1);
+	list.push_back(p2);
+	list.push_back(p3);
+	list.push_back(p4);
+	list.push_back(p5);
+	//fillPoly(canvas, list, Scalar(50, 250, 0), LINE_AA,0 );
+	//polylines(canvas, list, 0, Scalar(255, 0, 0), 2, LINE_AA, 0);
+	std::vector<std::vector<Point>> construct;
+	construct.push_back(list);
+	// 线宽为负数 填充
+	drawContours(canvas, construct, -1, Scalar(0, 0, 255), -1, LINE_AA);
+	imshow("多边形", canvas);
+}
+
+
+Point sp(-1, -1);//鼠标的开始的位置
+Point ep(-1, -1);
+Mat temp;
+static void mouse(int event, int x, int y, int flags, void* userdata) {
+	Mat  image = *(Mat*)(userdata);
+	Rect rect;
+	int dx, dy;
+	switch (event)
+	{
+	case EVENT_LBUTTONDOWN:
+		sp.x = x;
+		sp.y = y;
+		std::cout << "x: " + x << std::endl;
+		std::cout << "y: " + y << std::endl;
+		break;
+
+	case EVENT_LBUTTONUP:
+		ep.x = x;
+		ep.y = y;
+		rect.x = sp.x;
+		rect.y = sp.y;
+		dx = ep.x - sp.x;
+		dy = ep.y - sp.y;
+		rect.width = dx;
+		rect.height = dy;
+		if (dx > 0 && dy > 0) {
+			rectangle(image, rect, Scalar(0, 0, 255), 1, LINE_AA, 0);
+			imshow("roi", image);
+			imshow("鼠标绘制", image);
+			sp.x = -1;
+			sp.y = -1;//复位，为下一次做准备
+			ep.x = -1;
+			ep.y = -1;
+		}
+		break;
+
+	case EVENT_MOUSEMOVE:
+		ep.x = x;
+		ep.y = y;
+		rect.x = sp.x;
+		rect.y = sp.y;
+		dx = ep.x - sp.x;
+		dy = ep.y - sp.y;
+		rect.width = dx;
+		rect.height = dy;
+		if (dx > 0 && dy > 0) {
+			temp.copyTo(image);
+			rectangle(image, rect, Scalar(0, 0, 255), 1, LINE_AA, 0);
+			imshow("鼠标绘制", image);
+		}
+		break;
+	}
+}
+
+void QuickDemo::mouse_drawing_demo(Mat& image)
+{
+	namedWindow("鼠标绘制", WINDOW_AUTOSIZE);
+	setMouseCallback("鼠标绘制", mouse, &image);
+	imshow("鼠标绘制", image);
+	temp = image.clone();
+}
+
+void QuickDemo::norm_demo(Mat& image)
+{
+	Mat dst;
+	std::cout << image.type() << std::endl;
+	image.convertTo(image, CV_32F);
+	std::cout << image.type() << std::endl;
+	// 归一化处理
+	normalize(image, dst, 1.0, 0, NORM_MINMAX);
+	std::cout << dst.type() << std::endl;
+	imshow("图像的归一化", dst);//显示归一化的图像
+}
+
+void QuickDemo::resize_demo(Mat& image)
+{
+	Mat dst;
+	resize(image, dst, Size(image.rows / 2, image.cols / 2), 0, 0, INTER_LINEAR);
+	imshow("resize", dst);
+}
+
+void QuickDemo::flip_demo(Mat& image)
+{
+	Mat dst;
+	flip(image, dst, 0);//上下翻转 x对称
+	flip(image, dst, 1);//左右翻转 y对称
+	flip(image, dst, -1);//旋转180°
+	imshow("flip", dst);
+}
+
+void QuickDemo::rotate_demo(Mat& image)
+{
+	Mat dst,m;
+	int h = image.rows;// 高度
+	int w = image.cols;// 宽度
+	m=getRotationMatrix2D(Point( w / 2, h / 2), 20, 1.0);
+	double cos = abs(m.at<double>(0, 0));
+	double sin = abs(m.at<double>(0, 1));
+	int nw = cos * w + sin * h;
+	int nh = sin * w + cos * h;
+	m.at<double>(0, 2) += (nw / 2 - w / 2);
+	m.at<double>(1, 2) += (nh / 2 - h / 2);
+	
+	warpAffine(image, dst, m, Size(nw, nh));
+
+	imshow("rotate", dst);
+}
