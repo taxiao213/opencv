@@ -1,6 +1,10 @@
 #pragma once
 #include <opencv2/opencv.hpp>
+#include <iostream>
+#include <fstream>
 using namespace cv;
+using namespace dnn;
+using namespace std;
 
 class QuickDemo
 {
@@ -26,4 +30,14 @@ public:
 	void resize_demo(Mat& image);//图像缩放和插值
 	void flip_demo(Mat& image);//图像翻转
 	void rotate_demo(Mat& image);//图像旋转
+	void video_demo(Mat& image);//摄像头
+	void show_histogram_demo(Mat& image);//直方图
+	void histogram_2d_demo(Mat& image);//2D 直方图
+	void histogram_eq_demo(Mat& image);//直方图均衡化
+	void blur_demo(Mat& image);//图像的卷积操作 模糊效果
+	void gaussian_blur_demo(Mat& image);//高斯模糊
+	void bifilter_demo(Mat& image);//双边模糊
+	void face_detection_demo();//人脸识别
+	void loadCaffe(Mat& image);//加载caffe 人脸识别
+	void loadTensorFlow(Mat& image);//加载TensorFlow 人脸识别
 };

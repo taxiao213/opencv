@@ -450,18 +450,326 @@ void QuickDemo::flip_demo(Mat& image)
 
 void QuickDemo::rotate_demo(Mat& image)
 {
-	Mat dst,m;
+	Mat dst, m;
 	int h = image.rows;// 高度
 	int w = image.cols;// 宽度
-	m=getRotationMatrix2D(Point( w / 2, h / 2), 20, 1.0);
+	m = getRotationMatrix2D(Point(w / 2, h / 2), 20, 1.0);
 	double cos = abs(m.at<double>(0, 0));
 	double sin = abs(m.at<double>(0, 1));
 	int nw = cos * w + sin * h;
 	int nh = sin * w + cos * h;
 	m.at<double>(0, 2) += (nw / 2 - w / 2);
 	m.at<double>(1, 2) += (nh / 2 - h / 2);
-	
+
 	warpAffine(image, dst, m, Size(nw, nh));
 
 	imshow("rotate", dst);
+}
+
+void QuickDemo::video_demo(Mat& image)
+{
+	// 打开摄像头
+	//VideoCapture capture(0);
+	// 打开视频文件
+	VideoCapture capture("C:/project/c/opencv/project/opencv_01/images/balltest.mp4");
+	int width = capture.get(CAP_PROP_FRAME_WIDTH);// 宽度
+	int height = capture.get(CAP_PROP_FRAME_HEIGHT);// 高度
+	int count = capture.get(CAP_PROP_FRAME_COUNT);// 帧数
+	int fps = capture.get(CAP_PROP_FPS);//FPS
+	int fourcc = capture.get(CAP_PROP_FOURCC);//FOURCC
+	std::cout << "width:" << width << std::endl;
+	std::cout << "height:" << height << std::endl;
+	std::cout << "count:" << count << std::endl;
+	std::cout << "fps:" << fps << std::endl;
+	std::cout << "fourcc:" << fourcc << std::endl;
+	VideoWriter write("C:/project/c/opencv/project/opencv_01/images/write.mp4", fourcc, fps,
+		Size(width, height), true);
+	Mat frame;
+	while (true)
+	{
+		capture.read(frame);
+		if (frame.empty())break;
+
+		imshow("camera", frame);
+		write.write(frame);
+		int c = waitKey(100);
+		if (c == 27)break;
+	}
+	// 释放资源
+	capture.release();
+	write.release();
+}
+
+void QuickDemo::show_histogram_demo(Mat& image)
+{
+	std::vector<Mat> bgr_plane;
+	split(image, bgr_plane);
+	// 定义参数变量
+	const int channel[1] = { 0 };
+	const int bins[1] = { 256 };
+	float hranges[2] = { 0,255 };
+	const float* ranges[1] = { hranges };
+	Mat b_hist;
+	Mat g_hist;
+	Mat r_hist;
+	// 计算Blue,green,red通道的直方图
+	calcHist(&bgr_plane[0], 1, 0, Mat(), b_hist, 1, bins, ranges);
+	calcHist(&bgr_plane[1], 1, 0, Mat(), g_hist, 1, bins, ranges);
+	calcHist(&bgr_plane[2], 1, 0, Mat(), r_hist, 1, bins, ranges);
+	// 显示直方图
+	int hist_w = 512;
+	int hist_h = 400;
+	int bin_w = cvRound((double)hist_w / bins[0]);
+	Mat histogram = Mat::zeros(hist_w, hist_h, CV_8SC3);
+	// 归一化直方图数据
+	normalize(b_hist, b_hist, 0, histogram.rows, NORM_MINMAX, -1, Mat());
+	normalize(g_hist, g_hist, 0, histogram.rows, NORM_MINMAX, -1, Mat());
+	normalize(r_hist, r_hist, 0, histogram.rows, NORM_MINMAX, -1, Mat());
+	// 绘制直方图曲线
+	for (int i = 0; i < bins[0]; i++)
+	{
+		line(histogram, Point(bin_w * (i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
+			Point(bin_w * (i), hist_h - cvRound(b_hist.at<float>(i))), Scalar(255, 0, 0), 2, LINE_AA, 0);
+		line(histogram, Point(bin_w * (i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
+			Point(bin_w * (i), hist_h - cvRound(b_hist.at<float>(i))), Scalar(0, 255, 0), 2, LINE_AA, 0);
+		line(histogram, Point(bin_w * (i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
+			Point(bin_w * (i), hist_h - cvRound(b_hist.at<float>(i))), Scalar(0, 0, 255), 2, LINE_AA, 0);
+	}
+	namedWindow("histogram");
+	imshow("histogram", histogram);
+}
+
+void QuickDemo::histogram_2d_demo(Mat& image) {
+	// 2D 直方图
+	Mat hsv, hs_hist;
+	cvtColor(image, hsv, COLOR_BGR2HSV);
+	int hbins = 30, sbins = 32;
+	int hist_bins[] = { hbins, sbins };
+	float h_range[] = { 0, 180 };
+	float s_range[] = { 0, 256 };
+	const float* hs_ranges[] = { h_range, s_range };
+	int hs_channels[] = { 0, 1 };
+	calcHist(&hsv, 1, hs_channels, Mat(), hs_hist, 2, hist_bins, hs_ranges, true, false);
+	double maxVal = 0;
+	minMaxLoc(hs_hist, 0, &maxVal, 0, 0);
+	int scale = 10;
+	Mat hist2d_image = Mat::zeros(sbins * scale, hbins * scale, CV_8UC3);
+	for (int h = 0; h < hbins; h++) {
+		for (int s = 0; s < sbins; s++)
+		{
+			float binVal = hs_hist.at<float>(h, s);
+			int intensity = cvRound(binVal * 255 / maxVal);
+			rectangle(hist2d_image, Point(h * scale, s * scale),
+				Point((h + 1) * scale - 1, (s + 1) * scale - 1),
+				Scalar::all(intensity),
+				-1);
+		}
+	}
+	applyColorMap(hist2d_image, hist2d_image, COLORMAP_JET);
+	imshow("H-S Histogram", hist2d_image);
+	imwrite("E:/hist_2d.png", hist2d_image);
+}
+
+void QuickDemo::histogram_eq_demo(Mat& image) {
+	Mat gray;
+	cvtColor(image, gray, COLOR_BGR2GRAY);
+	imshow("灰度图像", gray);
+	Mat dst;
+	equalizeHist(gray, dst);
+	imshow("直方图均衡化演示", dst);
+}
+
+// 模糊效果	
+void QuickDemo::blur_demo(Mat& image) {
+	Mat dst;
+	// 3*3 的卷积，（-1，-1）中心
+	blur(image, dst, Size(3, 3), Point(-1, -1));
+	imshow("图像模糊", dst);
+}
+
+// 高斯模糊	
+void QuickDemo::gaussian_blur_demo(Mat& image) {
+	Mat dst;
+	// 3*3 的卷积，（-1，-1）中心
+	GaussianBlur(image, dst, Size(3, 3), 15);
+	imshow("高斯模糊", dst);
+}
+
+void QuickDemo::bifilter_demo(Mat& image) {
+	Mat dst;
+	namedWindow("双边模糊", WINDOW_FREERATIO);
+	bilateralFilter(image, dst, 0, 100, 10);
+	imshow("双边模糊", dst);
+}
+
+void QuickDemo::face_detection_demo() {
+	std::string root_dir = "D:/opencv-4.4.0/opencv/sources/samples/dnn/face_detector/";
+	dnn::Net net = dnn::readNetFromTensorflow(root_dir + "opencv_face_detector_uint8.pb", root_dir + "opencv_face_detector.pbtxt");
+	VideoCapture capture("D:/images/video/example_dsh.mp4");
+	Mat frame;
+	while (true) {
+		capture.read(frame);
+		if (frame.empty()) {
+			break;
+		}
+		Mat blob = dnn::blobFromImage(frame, 1.0, Size(300, 300), Scalar(104, 177, 123), false, false);
+		net.setInput(blob);// NCHW
+		Mat probs = net.forward(); // 
+		Mat detectionMat(probs.size[2], probs.size[3], CV_32F, probs.ptr<float>());
+		// 解析结果
+		for (int i = 0; i < detectionMat.rows; i++) {
+			float confidence = detectionMat.at<float>(i, 2);
+			if (confidence > 0.5) {
+				int x1 = static_cast<int>(detectionMat.at<float>(i, 3) * frame.cols);
+				int y1 = static_cast<int>(detectionMat.at<float>(i, 4) * frame.rows);
+				int x2 = static_cast<int>(detectionMat.at<float>(i, 5) * frame.cols);
+				int y2 = static_cast<int>(detectionMat.at<float>(i, 6) * frame.rows);
+				Rect box(x1, y1, x2 - x1, y2 - y1);
+				rectangle(frame, box, Scalar(0, 0, 255), 2, 8, 0);
+			}
+		}
+		imshow("人脸检测演示", frame);
+		int c = waitKey(1);
+		if (c == 27) { // 退出
+			break;
+		}
+	}
+}
+// 需要导入头文件 #include <iostream> #include <fstream>
+std::vector<std::string> loadLabel(std::string str) {
+	vector<string> className;
+	ifstream fp(str);
+	string name;
+	while (!fp.eof()) {
+		// 整行读取
+		getline(fp, name);
+		if (name.length()) {
+			className.push_back(name);
+		}
+	}
+	fp.close();
+	return className;
+}
+
+void QuickDemo::loadCaffe(Mat& image) {
+
+	// 模型
+	std::string model = "C:/project/opencv/opencv_windows/opencv/sources/samples/dnn/caffe/MobileNetSSD_deploy.caffemodel";
+	// 配置
+	std::string config = "C:/project/opencv/opencv_windows/opencv/sources/samples/dnn/caffe/MobileNetSSD_deploy.prototxt";
+	// 类别
+	std::string detection_class = "C:/project/opencv/opencv_windows/opencv/sources/samples/dnn/caffe/object_detection_classes_pascal_voc.txt";
+	// 加载 caffe 模型 两种方式
+	//Net net = readNet(model, config, "caffe");
+	Net net = readNetFromCaffe(config, model);
+	// 设置计算后端
+	net.setPreferableBackend(DNN_BACKEND_OPENCV);
+	// 设置计算目标
+	net.setPreferableTarget(DNN_TARGET_CPU);
+	// 获取分层信息
+	std::vector<String> layer = net.getLayerNames();
+	for (int i = 0; i < layer.size(); i++) {
+		int id = net.getLayerId(layer[i]);
+		Ptr<Layer> p_layer = net.getLayer(id);
+		printf("layer id:%d,type:%s,name:%s \n", id, p_layer->type.c_str(), p_layer->name.c_str());
+	}
+	// 构建输入
+	Mat blob = blobFromImage(image, 0.007843, Size(300, 300), Scalar(127.5, 127.5, 127.5), false, false);
+	net.setInput(blob);
+
+	// 推理,默认是最后一个 detection_out 1,1,100,7 
+	Mat forward = net.forward("detection_out");
+	printf("forward:%d,%d,%d,%d \n", forward.size[0], forward.size[1], forward.size[2], forward.size[3]);
+	// 1,1,100,7 
+	// 输入：[1x3x300x300] 输出：[1x1x100x7], 7 对应的浮点数据如下： [image_id, label, conf, x_min, y_min, x_max, y_max]
+	Mat detection(forward.size[2], forward.size[3], CV_32F, forward.ptr<float>());
+	// 读取类别名称
+	vector<string> label = loadLabel(detection_class);
+	for (int i = 0; i < detection.rows; i++) {
+		float conf = detection.at<float>(i, 2);
+		printf("conf:%f \n", conf);
+		// 识别精度
+		if (conf > 0.5) {
+			int index = detection.at<float>(i, 1);
+			float min_x = detection.at<float>(i, 3) * image.cols;
+			float min_y = detection.at<float>(i, 4) * image.rows;
+			float max_x = detection.at<float>(i, 5) * image.cols;
+			float max_y = detection.at<float>(i, 6) * image.rows;
+			Rect box(min_x, min_y, max_x - min_x, max_y - min_y);
+			rectangle(image, box, Scalar(0, 0, 255), 2, LINE_AA, 0);
+			// 参数1 Mat对象
+			// 参数2 label 标签
+			// 参数3 开始坐标，取box左上角坐标 top_left
+			// 参数4 字体
+			// 参数5 字体缩放
+			// 参数6 字体颜色 BGR
+			// 参数7 绘制线宽
+			putText(image, format("conf:%.2f,%s", conf, label[index - 1].c_str()), box.tl(), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(255, 0, 0),
+				1, LINE_AA);
+			printf("conf:%f,%d,%d", conf, box.x, box.y);
+		}
+	}
+	namedWindow("caffe detection", WINDOW_KEEPRATIO);
+	imshow("caffe detection", image);
+}
+
+void QuickDemo::loadTensorFlow(Mat& image) {
+
+	// 模型
+	std::string model = "C:/project/opencv/opencv_windows/opencv/sources/samples/dnn/TensorFlow/frozen_inference_graph.pb";
+	// 配置
+	std::string config = "C:/project/opencv/opencv_windows/opencv/sources/samples/dnn/TensorFlow/ssd_mobilenet_v2_coco_2018_03_29.pbtxt";
+	// 类别
+	std::string detection_class = "C:/project/opencv/opencv_windows/opencv/sources/samples/dnn/TensorFlow/object_detection_classes_coco.txt";
+	// 加载 caffe 模型 两种方式
+	Net net = readNetFromTensorflow(model, config);
+	// 设置计算后端
+	net.setPreferableBackend(DNN_BACKEND_OPENCV);
+	// 设置计算目标
+	net.setPreferableTarget(DNN_TARGET_CPU);
+	// 获取分层信息
+	std::vector<String> layer = net.getLayerNames();
+	for (int i = 0; i < layer.size(); i++) {
+		int id = net.getLayerId(layer[i]);
+		Ptr<Layer> p_layer = net.getLayer(id);
+		printf("layer id:%d,type:%s,name:%s \n", id, p_layer->type.c_str(), p_layer->name.c_str());
+	}
+	// 构建输入
+	Mat blob = blobFromImage(image, 1.0, Size(300, 300), Scalar(0, 0, 0), true, false);
+	net.setInput(blob);
+
+	// 推理,默认是最后一个 detection_out 1,1,100,7 
+	Mat forward = net.forward("detection_out");
+	printf("forward:%d,%d,%d,%d \n", forward.size[0], forward.size[1], forward.size[2], forward.size[3]);
+	// 1,1,100,7 
+	// 输入：[1x3x300x300] 输出：[1x1x100x7], 7 对应的浮点数据如下： [image_id, label, conf, x_min, y_min, x_max, y_max]
+	Mat detection(forward.size[2], forward.size[3], CV_32F, forward.ptr<float>());
+	// 读取类别名称
+	vector<string> label = loadLabel(detection_class);
+	for (int i = 0; i < detection.rows; i++) {
+		float conf = detection.at<float>(i, 2);
+		printf("conf:%f \n", conf);
+		// 识别精度
+		if (conf > 0.5) {
+			int index = detection.at<float>(i, 1);
+			float min_x = detection.at<float>(i, 3) * image.cols;
+			float min_y = detection.at<float>(i, 4) * image.rows;
+			float max_x = detection.at<float>(i, 5) * image.cols;
+			float max_y = detection.at<float>(i, 6) * image.rows;
+			Rect box(min_x, min_y, max_x - min_x, max_y - min_y);
+			rectangle(image, box, Scalar(0, 0, 255), 2, LINE_8, 0);
+			// 参数1 Mat对象
+			// 参数2 label 标签
+			// 参数3 开始坐标，取box左上角坐标 top_left
+			// 参数4 字体
+			// 参数5 字体缩放
+			// 参数6 字体颜色 BGR
+			// 参数7 绘制线宽
+			putText(image, format("conf:%.2f,%s", conf, label[index - 1].c_str()), box.tl(), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(255, 0, 0),
+				1, LINE_8);
+			printf("conf:%f,%d,%d", conf, box.x, box.y); 
+		}
+	}
+	namedWindow("TensorFlow detection", WINDOW_KEEPRATIO);
+	imshow("TensorFlow detection", image);
 }
