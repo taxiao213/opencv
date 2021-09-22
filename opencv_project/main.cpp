@@ -14,8 +14,8 @@ int main() {
 	if (src.empty()) {
 		return -1;
 	}
-	//namedWindow("input", WINDOW_FREERATIO);
-	//imshow("input", src);
+	namedWindow("input", WINDOW_AUTOSIZE);
+	imshow("input", src);
 	QuickDemo quickDemo;
 	//quickDemo.colorSpace(&src);
 	//quickDemo.matCreate(src);
@@ -46,7 +46,7 @@ int main() {
 	//quickDemo.bifilter_demo(src);
 	//quickDemo.face_detection_demo();
 	//quickDemo.loadCaffe(src);
-	quickDemo.loadTensorFlow(src);
+	//quickDemo.loadTensorFlow(src);
 
 	waitKey(0);
 	destroyAllWindows();

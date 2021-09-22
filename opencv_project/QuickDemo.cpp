@@ -21,23 +21,16 @@ void QuickDemo::matCreate(Mat mat) {
 	m1 = mat.clone();
 	// 复制
 	mat.copyTo(m2);
-
 	// 创建空白图像 三种方式 
 	// CV_8UC3  表示 8位 U 无符号 C char类型 3(3通道)
 	Mat m3 = Mat::zeros(Size(50, 50), CV_8UC3);
-
 	//Mat m3 = Mat::ones(Size(50,50), CV_8UC3);
-
 	//Mat m3 = Mat::eye(Size(50,50), CV_8UC3);
-
 	// 赋值操作
 	m3 = Scalar(0, 0, 255);
-
 	// 获取宽度 高度 通道数
 	std::cout << "width:" << m3.cols << " height:" << m3.rows << "channel: " << m3.channels() << std::endl;
-
 	std::cout << m3 << std::endl;
-
 	imshow("空白图像", m3);
 }
 
@@ -133,13 +126,13 @@ static void on_contrast(int b, void* userdata) {
 
 void QuickDemo::tracking_bar_demo(Mat& image)
 {
-	namedWindow("亮度调整", WINDOW_AUTOSIZE);
+	namedWindow("滚动条", WINDOW_AUTOSIZE);
 	int max_value = 100;
 	int lightness = 50;
 	int contrast_max_value = 200;
 	int contrast_value = 100;
-	createTrackbar("Value Bar:", "亮度调整", &lightness, max_value, on_lightness, (void*)(&image));
-	createTrackbar("Contrast Bar:", "亮度调整", &contrast_value, contrast_max_value, on_contrast, (void*)(&image));
+	createTrackbar("Value Bar:", "滚动条", &lightness, max_value, on_lightness, (void*)(&image));
+	createTrackbar("Contrast Bar:", "滚动条", &contrast_value, contrast_max_value, on_contrast, (void*)(&image));
 	on_lightness(50, &image);
 }
 
@@ -460,9 +453,7 @@ void QuickDemo::rotate_demo(Mat& image)
 	int nh = sin * w + cos * h;
 	m.at<double>(0, 2) += (nw / 2 - w / 2);
 	m.at<double>(1, 2) += (nh / 2 - h / 2);
-
 	warpAffine(image, dst, m, Size(nw, nh));
-
 	imshow("rotate", dst);
 }
 

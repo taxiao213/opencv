@@ -38,6 +38,6 @@ public:
 	void gaussian_blur_demo(Mat& image);//高斯模糊
 	void bifilter_demo(Mat& image);//双边模糊
 	void face_detection_demo();//人脸识别
-	void loadCaffe(Mat& image);//加载caffe 人脸识别
-	void loadTensorFlow(Mat& image);//加载TensorFlow 人脸识别
+	void loadCaffe(Mat& image);//加载caffe 物体识别
+	void loadTensorFlow(Mat& image);//加载TensorFlow 物体识别
 };
