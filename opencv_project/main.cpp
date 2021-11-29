@@ -1,7 +1,6 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "QuickDemo.h"
-#include "main.h"
 
 using namespace cv;
 int main() {
