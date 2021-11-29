@@ -40,4 +40,5 @@ public:
 	void face_detection_demo();//人脸识别
 	void loadCaffe(Mat& image);//加载caffe 物体识别
 	void loadTensorFlow(Mat& image);//加载TensorFlow 物体识别
+	void nv2rgb(Mat& image);//nv21转rgb
 };

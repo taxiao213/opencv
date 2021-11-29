@@ -1,6 +1,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include "QuickDemo.h"
+#include "main.h"
 
 using namespace cv;
 int main() {
@@ -47,6 +48,7 @@ int main() {
 	//quickDemo.face_detection_demo();
 	//quickDemo.loadCaffe(src);
 	//quickDemo.loadTensorFlow(src);
+	quickDemo.nv2rgb(src);
 
 	waitKey(0);
 	destroyAllWindows();

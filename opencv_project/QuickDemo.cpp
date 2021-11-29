@@ -106,7 +106,8 @@ void QuickDemo::pixelScale(Mat mat)
 
 
 // 亮度调整 image*1.0 + m*0.0 + b
-static void on_lightness(int b, void* userdata) {
+static void on_lightness(int b, void* userdata)
+{
 	Mat image = *((Mat*)userdata);
 	Mat dst = Mat::zeros(image.size(), image.type());
 	Mat m = Mat::zeros(image.size(), image.type());
@@ -115,7 +116,8 @@ static void on_lightness(int b, void* userdata) {
 }
 
 // 对比度调整 image*contrast + m*0.0 + 0
-static void on_contrast(int b, void* userdata) {
+static void on_contrast(int b, void* userdata)
+{
 	Mat image = *((Mat*)userdata);
 	Mat dst = Mat::zeros(image.size(), image.type());
 	Mat m = Mat::zeros(image.size(), image.type());
@@ -758,9 +760,26 @@ void QuickDemo::loadTensorFlow(Mat& image) {
 			// 参数7 绘制线宽
 			putText(image, format("conf:%.2f,%s", conf, label[index - 1].c_str()), box.tl(), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(255, 0, 0),
 				1, LINE_8);
-			printf("conf:%f,%d,%d", conf, box.x, box.y); 
+			printf("conf:%f,%d,%d", conf, box.x, box.y);
 		}
 	}
 	namedWindow("TensorFlow detection", WINDOW_KEEPRATIO);
 	imshow("TensorFlow detection", image);
+}
+
+// NV21 转成RGB 数据
+void QuickDemo::nv2rgb(Mat& image)
+{
+	int width = 1920;
+	int height = 1080;
+	FILE* file = fopen("C:/project/c/opencv/project/opencv_01/images/camera_mark.jpg", "rb+");
+	// NV21 转成RGB 数据
+	auto* yuvBuf = new unsigned char[width * height * 3 / 2];
+	fread(yuvBuf, height * 3 / 2, width, file);
+	cv::Mat yuvMat = cv::Mat(height * 3 / 2, width, CV_8UC1, yuvBuf);
+	cv::Mat rgbMat = cv::Mat(height, width, CV_8UC3);
+	cv::cvtColor(yuvMat, rgbMat, COLOR_YUV2BGR_NV21);
+
+	namedWindow("nv2rgb", WINDOW_KEEPRATIO);
+	imshow("nv2rgb", rgbMat);
 }
